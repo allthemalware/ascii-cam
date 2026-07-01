@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ASCII Cam — webcam to ASCII, in your browser</title>
+<meta name="description" content="Turn your webcam, a video file, or a screen share into live ASCII art. Retro terminal palettes and CRT effects. 100% client-side — nothing is uploaded.">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%230d100b'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='22' fill='%238a9a5b' text-anchor='middle'%3E@%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <h1>ASCII&nbsp;Cam</h1>
+    <p class="tagline">webcam&nbsp;→ ASCII, live in your browser</p>
+    <span class="privacy" title="No server: getUserMedia frames and picked files never leave this page.">🔒 100% client-side</span>
+  </header>
+
+  <main class="stage">
+    <div class="crt-screen" id="screen">
+      <canvas id="output"></canvas>
+      <div class="glass"></div>
+      <div class="rec-badge" id="recBadge" hidden><span class="dot"></span>REC <span id="recTime">30.0s</span></div>
+    </div>
+  </main>
+
+  <aside class="panel" id="panel">
+    <section>
+      <h2>Source</h2>
+      <div class="btn-row">
+        <button id="btnCam" class="primary">▸ Start camera</button>
+        <button id="btnScreen">Share screen</button>
+        <button id="btnFile">Open video…</button>
+        <button id="btnStop">Stop</button>
+      </div>
+      <input type="file" id="fileInput" accept="video/*" hidden>
+      <p class="status" id="srcStatus">ready</p>
+    </section>
+
+    <section>
+      <h2>Machine preset</h2>
+      <label class="field">
+        <span>Terminal style</span>
+        <select id="machineSelect"></select>
+      </label>
+    </section>
+
+    <section>
+      <h2>Colour</h2>
+      <label class="field">
+        <span>Palette</span>
+        <select id="paletteSelect"></select>
+      </label>
+      <label class="field">
+        <span>Colour mode</span>
+        <select id="colorModeSelect"></select>
+      </label>
+      <div class="swatches">
+        <label>bg<input type="color" id="colBg"></label>
+        <label>dim<input type="color" id="colDim"></label>
+        <label>fg<input type="color" id="colFg"></label>
+        <label>hi<input type="color" id="colBright"></label>
+        <button id="btnResetColors" class="mini" title="Reset colours to the selected palette">↺</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Characters</h2>
+      <label class="field">
+        <span>Gradient map</span>
+        <select id="rampSelect"></select>
+      </label>
+      <label class="field">
+        <span>Custom ramp <small>(dark → light)</small></span>
+        <input type="text" id="customRamp" placeholder=" .:-=+*#%@" spellcheck="false" autocomplete="off">
+      </label>
+      <label class="range">
+        <span>Resolution <b id="resolutionVal">120</b></span>
+        <input type="range" id="resolution" min="16" max="300" step="1">
+      </label>
+      <label class="range">
+        <span>Char aspect <b id="charAspectVal">0.5</b></span>
+        <input type="range" id="charAspect" min="30" max="100" step="2">
+      </label>
+      <label class="range">
+        <span>Frame rate <b id="fpsVal">30</b></span>
+        <input type="range" id="fps" min="5" max="60" step="1">
+      </label>
+      <div class="checks">
+        <label><input type="checkbox" id="invert"> Invert</label>
+        <label><input type="checkbox" id="dither"> Dither</label>
+        <label><input type="checkbox" id="mirror"> Mirror</label>
+      </div>
+      <label class="field">
+        <span>Fit</span>
+        <select id="fitSelect"></select>
+      </label>
+    </section>
+
+    <section>
+      <h2>CRT / terminal effects</h2>
+      <label class="range"><span>Scanlines <b id="crt_scanlinesVal">0%</b></span><input type="range" id="crt_scanlines" min="0" max="100" step="1"></label>
+      <label class="range"><span>Glow / bloom <b id="crt_glowVal">0%</b></span><input type="range" id="crt_glow" min="0" max="100" step="1"></label>
+      <label class="range"><span>Curvature <b id="crt_curvatureVal">0%</b></span><input type="range" id="crt_curvature" min="0" max="100" step="1"></label>
+      <label class="range"><span>Flicker <b id="crt_flickerVal">0%</b></span><input type="range" id="crt_flicker" min="0" max="100" step="1"></label>
+      <label class="range"><span>Aberration <b id="crt_aberrationVal">0%</b></span><input type="range" id="crt_aberration" min="0" max="100" step="1"></label>
+      <label class="range"><span>Vignette <b id="crt_vignetteVal">0%</b></span><input type="range" id="crt_vignette" min="0" max="100" step="1"></label>
+      <label class="range"><span>Noise / static <b id="crt_noiseVal">0%</b></span><input type="range" id="crt_noise" min="0" max="100" step="1"></label>
+      <label class="range"><span>Phosphor trails <b id="crt_trailsVal">0%</b></span><input type="range" id="crt_trails" min="0" max="100" step="1"></label>
+      <label class="range"><span>LCD grid <b id="crt_gridVal">0%</b></span><input type="range" id="crt_grid" min="0" max="100" step="1"></label>
+    </section>
+
+    <section>
+      <h2>Capture</h2>
+      <div class="btn-row">
+        <button id="btnSnapshot">Save PNG</button>
+        <button id="btnCopy">Copy text</button>
+        <button id="btnRecord">● Record</button>
+      </div>
+      <p class="hint">Recording captures the ASCII output (with baked effects) for up to 30&nbsp;s, mp4 where supported.</p>
+    </section>
+
+    <footer class="panel-foot">
+      Everything runs locally in your browser — no uploads, no servers, no tracking.
+    </footer>
+  </aside>
+
+  <button class="panel-toggle" id="panelToggle" title="Toggle controls">⚙</button>
+</div>
+
+<video id="video" playsinline muted></video>
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
