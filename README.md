@@ -8,10 +8,10 @@ CRT effects, and one-click recording.
 page and never leave your machine. There is no server, no upload, no tracking.
 
 > Live: `https://<user>.github.io/ascii-cam/`
-> (e.g. https://thewhytewolf.github.io/ascii-cam/ once Pages is enabled)
+> (e.g. https://allthemalware.github.io/ascii-cam/ once Pages is enabled)
 
 This is the browser sibling of the terminal tool
-[`ascii_tube` / `ascii_cam`](https://github.com/TheWhyteWolf/ascii_tube).
+[`ascii_tube` / `ascii_cam`](https://github.com/allthemalware/ascii_tube).
 
 ## Features
 
